@@ -1,0 +1,19 @@
+// Version 
+syntax = "proto3"; 
+
+// Package name 
+option go_package = "github.com/Aritiaya50217/Microservice";
+
+// Structures
+message IsAvaliableToSellReq {
+    string playerId = 1 ; 
+    string itemId = 2 ;
+}
+message IsAvaliableToSellRes {
+    bool isAvaliable = 1 ;
+}
+
+// Method 
+service InventoryGrpcService {
+    rpc IsAvaliableToSell(IsAvaliableToSellReq) returns (IsAvaliableToSellRes){}
+}

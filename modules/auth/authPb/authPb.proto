@@ -1,0 +1,22 @@
+// Version
+syntax = "proto3";
+
+// Package name 
+option go_package = "github.com/Aritiaya50217/Microservice"; 
+
+// structures
+message AccessTokenSearchReq {
+    string accessToken = 1;
+}
+message AccessTokenSearchRes {
+    bool isValid =1; 
+}
+message RoleCountReq{}
+message RoleCountRes {
+    int64 count =1;
+}
+// methods
+service AuthGrpcService {
+    rpc AccessTokenSearch(AccessTokenSearchReq) returns (AccessTokenSearchRes);
+    rpc RolesCount(RoleCountReq) returns (RoleCountRes);
+}
