@@ -9,7 +9,7 @@ import (
 	"github.com/Aritiaya50217/MicroserviceWithGolang/modules/player"
 	playerPb "github.com/Aritiaya50217/MicroserviceWithGolang/modules/player/playerPb"
 	playerRepositorys "github.com/Aritiaya50217/MicroserviceWithGolang/modules/player/playerRepository"
-	"github.com/Aritiaya50217/MicroserviceWithGolang/utils"
+	utils "github.com/Aritiaya50217/MicroserviceWithGolang/pkg/utils"
 	"golang.org/x/crypto/bcrypt"
 )
 

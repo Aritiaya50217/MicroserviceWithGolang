@@ -7,7 +7,7 @@ import (
 	"github.com/Aritiaya50217/MicroserviceWithGolang/config"
 	"github.com/Aritiaya50217/MicroserviceWithGolang/modules/player"
 	"github.com/Aritiaya50217/MicroserviceWithGolang/pkg/database"
-	"github.com/Aritiaya50217/MicroserviceWithGolang/utils"
+	"github.com/Aritiaya50217/MicroserviceWithGolang/pkg/utils"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"

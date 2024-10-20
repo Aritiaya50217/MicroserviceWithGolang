@@ -51,7 +51,7 @@ func (u *authUsecase) Login(pctx context.Context, cfg *config.Config, req *auth.
 		RoleCode: int(profile.RoleCode),
 	})
 
-	credentialId, err := u.authRepository.InsertOnePlayerCredential(pctx, &auth.Credentail{
+	credentialId, _ := u.authRepository.InsertOnePlayerCredential(pctx, &auth.Credentail{
 		PlayerId:     profile.Id,
 		RoleCode:     int(profile.RoleCode),
 		AccessToken:  accessToken,
