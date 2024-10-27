@@ -7,7 +7,7 @@ import (
 )
 
 type (
-	Credentail struct {
+	Credential struct {
 		Id           primitive.ObjectID `bson:"_id,omitempty"`
 		PlayerId     string             `bson:"player_id"`
 		RoleCode     int                `bson:"role_code"`

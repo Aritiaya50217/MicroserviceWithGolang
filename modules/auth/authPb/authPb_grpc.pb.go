@@ -146,5 +146,3 @@ var AuthGrpcService_ServiceDesc = grpc.ServiceDesc{
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "modules/auth/authPb/authPb.proto",
 }
-
-

@@ -9,6 +9,7 @@ import (
 
 	"github.com/Aritiaya50217/MicroserviceWithGolang/config"
 	"github.com/Aritiaya50217/MicroserviceWithGolang/modules/auth"
+	authPb "github.com/Aritiaya50217/MicroserviceWithGolang/modules/auth/authPb"
 	authRepository "github.com/Aritiaya50217/MicroserviceWithGolang/modules/auth/authRepository"
 	"github.com/Aritiaya50217/MicroserviceWithGolang/modules/player"
 	playerPb "github.com/Aritiaya50217/MicroserviceWithGolang/modules/player/playerPb"
@@ -20,6 +21,9 @@ type (
 	AuthUsecaseService interface {
 		Login(pctx context.Context, cfg *config.Config, req *auth.PlayerLoginReq) (*auth.ProfileIntercepter, error)
 		RefreshToken(pctx context.Context, cfg *config.Config, req *auth.RefreshTokenReq) (*auth.ProfileIntercepter, error)
+		Logout(pctx context.Context, credentialId string) (int64, error)
+		AccessTokenSearch(pctx context.Context, accessToken string) (*authPb.AccessTokenSearchRes, error)
+		RolesCount(pctx context.Context) (*authPb.RolesCountRes, error)
 	}
 
 	authUsecase struct {
@@ -36,11 +40,12 @@ func (u *authUsecase) Login(pctx context.Context, cfg *config.Config, req *auth.
 		Email:    req.Email,
 		Password: req.Password,
 	})
-
 	if err != nil {
 		return nil, err
 	}
-	profile.Id = "player: " + profile.Id
+
+	profile.Id = "player:" + profile.Id
+
 	accessToken := u.authRepository.AccessToken(cfg, &jwtauth.Claims{
 		PlayerId: profile.Id,
 		RoleCode: int(profile.RoleCode),
@@ -51,7 +56,7 @@ func (u *authUsecase) Login(pctx context.Context, cfg *config.Config, req *auth.
 		RoleCode: int(profile.RoleCode),
 	})
 
-	credentialId, _ := u.authRepository.InsertOnePlayerCredential(pctx, &auth.Credentail{
+	credentialId, err := u.authRepository.InsertOnePlayerCredential(pctx, &auth.Credential{
 		PlayerId:     profile.Id,
 		RoleCode:     int(profile.RoleCode),
 		AccessToken:  accessToken,
@@ -62,7 +67,9 @@ func (u *authUsecase) Login(pctx context.Context, cfg *config.Config, req *auth.
 	if err != nil {
 		return nil, err
 	}
+
 	loc, _ := time.LoadLocation("Asia/Bangkok")
+
 	return &auth.ProfileIntercepter{
 		PlayerProfile: &player.PlayerProfile{
 			Id:        profile.Id,
@@ -71,14 +78,14 @@ func (u *authUsecase) Login(pctx context.Context, cfg *config.Config, req *auth.
 			CreatedAt: utils.ConvertStringTimeToTime(profile.CreatedAt).In(loc),
 			UpdatedAt: utils.ConvertStringTimeToTime(profile.UpdatedAt).In(loc),
 		},
-		Credentail: &auth.CredentailRes{
+		Credential: &auth.CredentialRes{
 			Id:           credential.Id.Hex(),
 			PlayerId:     credential.PlayerId,
 			RoleCode:     credential.RoleCode,
 			AccessToken:  credential.AccessToken,
 			RefreshToken: credential.RefreshToken,
-			CreatedAt:    credential.CreatedAt,
-			UpdatedAt:    credential.UpdatedAt,
+			CreatedAt:    credential.CreatedAt.In(loc),
+			UpdatedAt:    credential.UpdatedAt.In(loc),
 		},
 	}, nil
 }
@@ -129,7 +136,7 @@ func (u *authUsecase) RefreshToken(pctx context.Context, cfg *config.Config, req
 			CreatedAt: utils.ConvertStringTimeToTime(profile.CreatedAt),
 			UpdatedAt: utils.ConvertStringTimeToTime(profile.UpdatedAt),
 		},
-		Credentail: &auth.CredentailRes{
+		Credential: &auth.CredentialRes{
 			Id:           credential.Id.Hex(),
 			PlayerId:     credential.PlayerId,
 			RoleCode:     credential.RoleCode,
@@ -138,5 +145,36 @@ func (u *authUsecase) RefreshToken(pctx context.Context, cfg *config.Config, req
 			CreatedAt:    credential.CreatedAt.In(loc),
 			UpdatedAt:    credential.UpdatedAt.In(loc),
 		},
+	}, nil
+}
+
+func (u *authUsecase) Logout(pctx context.Context, credentialId string) (int64, error) {
+	return u.authRepository.DeleteOnePlayerCredential(pctx, credentialId)
+}
+
+func (u *authUsecase) AccessTokenSearch(pctx context.Context, accessToken string) (*authPb.AccessTokenSearchRes, error) {
+	credential, err := u.authRepository.FindOneAccessToken(pctx, accessToken)
+	if err != nil {
+		return &authPb.AccessTokenSearchRes{
+			IsValid: false,
+		}, err
+	}
+	if credential == nil {
+		return &authPb.AccessTokenSearchRes{
+			IsValid: false,
+		}, errors.New("error : access token is invalid")
+	}
+	return &authPb.AccessTokenSearchRes{
+		IsValid: true,
+	}, nil
+}
+
+func (u *authUsecase) RolesCount(pctx context.Context) (*authPb.RolesCountRes, error) {
+	result, err := u.authRepository.RolesCount(pctx)
+	if err != nil {
+		return nil, err
+	}
+	return &authPb.RolesCountRes{
+		Count: result,
 	}, nil
 }

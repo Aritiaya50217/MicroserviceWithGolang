@@ -23,14 +23,17 @@ func PlayerMigrate(pctx context.Context, cfg *config.Config) {
 	defer db.Client().Disconnect(pctx)
 
 	col := db.Collection("player_transactions")
+
 	// indexs
 	indexs, _ := col.Indexes().CreateMany(pctx, []mongo.IndexModel{
 		{Keys: bson.D{{"_id", 1}}},
 		{Keys: bson.D{{"player_id", 1}}},
 	})
 	log.Println(indexs)
+
 	col = db.Collection("players")
 
+	// indexs
 	indexs, _ = col.Indexes().CreateMany(pctx, []mongo.IndexModel{
 		{Keys: bson.D{{"_id", 1}}},
 		{Keys: bson.D{{"email", 1}}},
@@ -112,6 +115,7 @@ func PlayerMigrate(pctx context.Context, cfg *config.Config) {
 				UpdatedAt: utils.LocalTime(),
 			},
 		}
+
 		docs := make([]any, 0)
 		for _, r := range roles {
 			docs = append(docs, r)
@@ -123,7 +127,7 @@ func PlayerMigrate(pctx context.Context, cfg *config.Config) {
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Migrate player completed : ", results)
+	log.Println("Migrate auth completed: ", results)
 
 	playerTransactions := make([]any, 0)
 	for _, p := range results.InsertedIDs {
@@ -133,16 +137,18 @@ func PlayerMigrate(pctx context.Context, cfg *config.Config) {
 			CreatedAt: utils.LocalTime(),
 		})
 	}
+
 	col = db.Collection("player_transactions")
 	results, err = col.InsertMany(pctx, playerTransactions, nil)
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Migrate player_transactions completed : ", results)
+	log.Println("Migrate player_transactions completed: ", results)
+
 	col = db.Collection("player_transactions_queue")
 	result, err := col.InsertOne(pctx, bson.M{"offset": -1}, nil)
 	if err != nil {
 		panic(err)
 	}
-	log.Println("Migrate player_transaction_queue completed : ", result)
+	log.Println("Migrate player_transactions_queue completed: ", result)
 }

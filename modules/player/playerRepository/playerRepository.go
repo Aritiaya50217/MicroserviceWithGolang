@@ -25,6 +25,7 @@ type (
 		InsertOnePlayerTransaction(pctx context.Context, req *player.PlayerTransaction) (primitive.ObjectID, error)
 		GetPlayerSavingAccount(pctx context.Context, playerId string) (*player.PlayerSavingAccount, error)
 		FindOnePlayerCredential(pctx context.Context, email string) (*player.Player, error)
+		FindOnePlayerProfileToRefresh(pctx context.Context, playerId string) (*player.Player, error)
 	}
 	playerRepository struct {
 		db *mongo.Client
@@ -148,7 +149,6 @@ func (r *playerRepository) FindOnePlayerProfile(pctx context.Context, playerId s
 		log.Printf("Error : FindOnePlayerProfile: %s", err.Error())
 		return nil, errors.New("error : player profile not found")
 	}
-
 	return result, nil
 }
 
